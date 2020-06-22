@@ -5,8 +5,7 @@
     "/home/ops/.aws": "/home/ops/.aws"
   },
   "recommended-queues" : [
-    "aria-job_worker-large",
-    "urgent-response-job_worker-large"
+    "aria-s1-cod"
   ],
   "disk_usage":"2GB",
   "soft_time_limit": 3300,
