@@ -198,6 +198,11 @@ if __name__ == '__main__':
     bands_geo = []
     for i in range(nbands):
         geoband = griddata(latlon, (bands[i]).reshape(length*width), (grid_lat, grid_lon), method=rmethod, fill_value = 0.0)
+        if inps.rmethod==0:
+            geoband2 = griddata(latlon, (bands[i]).reshape(length*width), (grid_lat, grid_lon), method='linear')
+            geoband[np.isnan(geoband2)] = 0
+            print('nan value')
+
         bands_geo.append(geoband)
 
     print("write result")

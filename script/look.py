@@ -3,8 +3,6 @@
 #Cunren Liang, JPL/Caltech
 
 
-from __future__ import division
-from past.utils import old_div
 import os
 import sys
 import argparse
@@ -64,8 +62,8 @@ def ampLooks(inps):
 
     inWidth = getWidth(inps.input + '.xml')
     inLength = getLength(inps.input + '.xml')
-    outWidth = int(old_div(inWidth,inps.rlks))
-    outLength = int(old_div(inLength,inps.alks))
+    outWidth = int(inWidth/inps.rlks)
+    outLength = int(inLength/inps.alks)
 
     #run it
     #cmd = 'echo -e "{}\n{}\n{} {}\n{} {}\n" | $INSAR_ZERODOP_BIN/rilooks'.format(inps.input, inps.output, inWidth, inLength, inps.rlks, inps.alks)
@@ -88,11 +86,12 @@ def intLooks(inps):
 
     inWidth = getWidth(inps.input + '.xml')
     inLength = getLength(inps.input + '.xml')
-    outWidth = int(old_div(inWidth,inps.rlks))
-    outLength = int(old_div(inLength,inps.alks))
+    outWidth = int(inWidth/inps.rlks)
+    outLength = int(inLength/inps.alks)
 
     #run program here
-    cmd = 'echo "{}\n{}\n{} {}\n{} {}\n" | $INSAR_ZERODOP_BIN/cpxlooks'.format(inps.input, inps.output, inWidth, inLength, inps.rlks, inps.alks)
+    #cmd = 'echo "{}\n{}\n{} {}\n{} {}\n" | $INSAR_ZERODOP_BIN/cpxlooks'.format(inps.input, inps.output, inWidth, inLength, inps.rlks, inps.alks)
+    cmd = 'echo "{}\n{}\n{} {}\n{} {}\n" | cpxlooks'.format(inps.input, inps.output, inWidth, inLength, inps.rlks, inps.alks)
     runCmd(cmd)
     
     #get xml file for interferogram
@@ -111,12 +110,12 @@ def mskLooks(inps):
 
     inWidth = getWidth(inps.input + '.xml')
     inLength = getLength(inps.input + '.xml')
-    outWidth = int(old_div(inWidth,inps.rlks))
-    outLength = int(old_div(inLength,inps.alks))
+    outWidth = int(inWidth/inps.rlks)
+    outLength = int(inLength/inps.alks)
 
     #look_msk infile outfile nrg nrlks nalks
     #run program here
-    cmd = '$INSAR_ZERODOP_BIN/look_msk {} {} {} {} {}'.format(inps.input, inps.output, inWidth, inps.rlks, inps.alks)
+    cmd = 'look_msk {} {} {} {} {}'.format(inps.input, inps.output, inWidth, inps.rlks, inps.alks)
     runCmd(cmd)
     
     #get xml file for interferogram
@@ -138,12 +137,13 @@ def hgtLooks(inps):
 
     inWidth = getWidth(inps.input + '.xml')
     inLength = getLength(inps.input + '.xml')
-    outWidth = int(old_div(inWidth,inps.rlks))
-    outLength = int(old_div(inLength,inps.alks))
+    outWidth = int(inWidth/inps.rlks)
+    outLength = int(inLength/inps.alks)
 
     #look_msk infile outfile nrg nrlks nalks
     #run program here
-    cmd = '$INSAR_ZERODOP_BIN/look_double {} {} {} {} {}'.format(inps.input, inps.output, inWidth, inps.rlks, inps.alks)
+    #cmd = '$INSAR_ZERODOP_BIN/look_double {} {} {} {} {}'.format(inps.input, inps.output, inWidth, inps.rlks, inps.alks)
+    cmd = 'look_double {} {} {} {} {}'.format(inps.input, inps.output, inWidth, inps.rlks, inps.alks)
     runCmd(cmd)
     
 
@@ -180,15 +180,29 @@ def cmdLineParse():
 if __name__ == '__main__':
 
     inps = cmdLineParse()
-
-    if inps.input.endswith('.amp'):
+    print('filename : {}'.format(inps.input))
+    if inps.input.endswith('.amp') or inps.input.endswith('.flt'):
         ampLooks(inps)
-    elif inps.input.endswith('.int'):
+        print('amp Look')
+    elif inps.input.endswith('.int') or inps.input.endswith('.flat'):
         intLooks(inps)
-    elif inps.input.endswith('.msk'):
-        mskLooks(inps)
-    elif inps.input.endswith('.hgt') or inps.input.endswith('.lat') or inps.input.endswith('.lon') or inps.input.find('lat') or inps.input.find('lon'):
+
+        print('int Look')
+    elif inps.input.endswith('.hgt') or inps.input.endswith('.lat') or inps.input.endswith('.lon') or (inps.input.find('lat')>0) or (inps.input.find('lon') >0):
         hgtLooks(inps)
+        print('hgt Look')
+        if inps.input.endswith('.hgt'): print('hgt')
+        if inps.input.endswith('.lat'): print('lat')
+        if inps.input.endswith('.lon'): print('lon')
+        if inps.input.find('lon'): print('lon2 {}'.format(inps.input.find('lon')))
+        if inps.input.find('lat'): print('lat2')
+    elif (inps.input.find('msk')>0) or (inps.input.lower().find('mask')>0):
+        print('detect_lon: {}'.format(inps.input.find('la')))
+        print('filename : {}'.format(inps.input))
+        mskLooks(inps)
+#    elif inps.input.endswith('.hgt') or inps.input.endswith('.lat') or inps.input.endswith('.lon') or inps.input.find('lat') or inps.input.find('lon'):
+#        print('double_format')
+#        hgtLooks(inps)
     else:
         raise Exception('file type not supported yet')
         #sys.exit()
