@@ -115,6 +115,35 @@ def cmdLineParse():
 
     return parser.parse_args()
 
+def post_process_snwe(bbox):
+    # handle case where it crosses antimeridian to not wrap values
+    dem_S, dem_N, dem_W, dem_E = bbox
+
+    # if cross anti-merdian, we need to figure out how to unwrap it
+    if (dem_E - dem_W) > 320 or (dem_E < dem_W):
+        print(f"dem_W={dem_W}, dem_E={dem_E}")
+        # implies that the dateline is crossed
+        # gets the bounds ont the side of the IDL that's the bigger one (most of burst)
+        AP = max(dem_W, dem_E) # asia pacific, always postive
+        NA = min(dem_W, dem_E) # americas, always negative, hence abs
+        # the bigger one is the one that's furthest from 180 / -180
+        diff_AP = 180.0 - AP
+        diff_NA = NA + 180
+        if diff_AP > diff_NA:
+            # get the asia-pacific side and wrap
+            bounds = (AP, NA+360)
+        else:
+            # get the north-america side and wrap
+            bounds = (AP-360, NA)
+
+        dem_W, dem_E = bounds
+        print(f"dem_W={dem_W}, dem_E={dem_E}, AP={AP}, NA={NA}, diff_AP={diff_AP}, diff_NA={diff_NA}")
+
+
+    bbox = [dem_S, dem_N, dem_W, dem_E]
+
+    return bbox
+
 
 if __name__ == '__main__':
 
@@ -170,6 +199,7 @@ if __name__ == '__main__':
         if len(bbox) != 4:
             raise Exception('bbox should contain 4 floating point values!')
     print("geocode bounding box:")
+    bbox = post_process_snwe(bbox)
     print("south: {}".format(bbox[0]))
     print("north: {}".format(bbox[1]))
     print("west: {}".format(bbox[2]))
